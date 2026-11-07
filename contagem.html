@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#140d13">
+<meta name="description" content="Nossa contagem regressiva para o casamento de Fernanda e Hebert.">
+<title>Contagem para o nosso sim | Fernanda &amp; Hebert</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,500;1,600&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:dark;--gold:#edd5a8;--cream:#fff9f1;--wine:#65263a}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:Jost,Arial,sans-serif}
+body{background:#100b0f;color:var(--cream);overflow-x:hidden}
+.bg{position:fixed;inset:0;z-index:-3;background:#090609;overflow:hidden}
+.bg:before{content:"";position:absolute;inset:-2%;background:url('foto-contagem.webp') center 53%/cover no-repeat;opacity:0;transform:scale(1.065);filter:saturate(.85);transition:opacity 2.6s ease,transform 11s ease,filter 3.5s ease}
+body.started .bg:before{opacity:1;transform:scale(1);filter:saturate(1.06)}
+.bg:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(11,9,13,.78) 0%,rgba(12,9,14,.42) 37%,rgba(10,7,11,.57) 70%,rgba(9,6,9,.86) 100%);transition:background 2s}
+.veil{position:fixed;inset:0;z-index:5;background:#080608;pointer-events:none;opacity:1;transition:opacity 2.5s 0.2s ease}body.started .veil{opacity:0}
+#confetti{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:8}
+.layout{min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:82px 18px 55px;position:relative;z-index:4}
+.topline{font-size:11px;letter-spacing:.32em;text-transform:uppercase;color:#f2ddbc;font-weight:500;text-shadow:0 2px 12px #000;opacity:0;transform:translateY(20px);transition:all 1.3s .7s}body.started .topline{opacity:1;transform:none}
+.ornament{margin:16px 0 18px;width:110px;height:1px;background:linear-gradient(90deg,transparent,#d8ba89,transparent);opacity:0;transition:opacity 1.3s 1.2s}body.started .ornament{opacity:1}
+h1{font:italic 500 clamp(51px,9.6vw,118px)/.9 'Cormorant Garamond',Georgia,serif;margin:0;letter-spacing:-.035em;text-shadow:0 10px 30px #0009;opacity:0;transform:translateY(20px);transition:all 1.5s 1s}body.started h1{opacity:1;transform:none}
+.subtitle{font:italic 500 clamp(25px,3.3vw,37px)/1.1 'Cormorant Garamond',Georgia,serif;color:var(--gold);margin:22px 0 0;text-shadow:0 4px 18px #000;opacity:0;transform:translateY(15px);transition:all 1.3s 1.45s}body.started .subtitle{opacity:1;transform:none}
+.countbox{margin:38px auto 20px;padding:clamp(19px,3vw,32px) clamp(10px,3.5vw,45px);width:min(780px,100%);border:1px solid #ffffff50;background:linear-gradient(125deg,#130e15a6,#160e17b8);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 25px 75px #0009, inset 0 0 0 1px #e7cba720;border-radius:3px;opacity:0;transform:translateY(25px) scale(.96);transition:all 1.2s 2.2s}body.started .countbox{opacity:1;transform:none}
+.countlabel{font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:#eddfcb;margin-bottom:17px}
+.clock{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(5px,2vw,20px)}
+.unit{min-width:0;position:relative}.unit+.unit:before{content:"";position:absolute;left:calc(-.5 * clamp(5px,2vw,20px));top:9%;height:62%;width:1px;background:#ffffff33}
+.num{display:block;font:500 clamp(43px,9vw,86px)/1 'Cormorant Garamond',Georgia,serif;font-variant-numeric:tabular-nums;letter-spacing:-.03em;text-shadow:0 5px 20px #0008}
+.name{display:block;margin-top:9px;font-size:clamp(8px,1.7vw,11px);letter-spacing:.12em;text-transform:uppercase;color:#e6ceae}
+.seconds .num{color:#f3d59b}.seconds.pulse .num{animation:tickpop .25s ease}@keyframes tickpop{0%{transform:translateY(-3px);opacity:.7}100%{transform:none;opacity:1}}
+.message{max-width:630px;margin:19px auto 0;font:italic 500 clamp(20px,3.5vw,29px)/1.35 'Cormorant Garamond',Georgia,serif;text-shadow:0 4px 18px #000;opacity:0;transition:opacity 1.3s 2.6s}body.started .message{opacity:1}
+.date{font-size:11px;text-transform:uppercase;letter-spacing:.23em;margin:20px 0 0;color:#efd4ab;text-shadow:0 2px 12px #000;opacity:0;transition:opacity 1.3s 2.8s}body.started .date{opacity:1}
+.controls{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:center;margin-top:32px;opacity:0;transition:opacity 1.3s 3s}body.started .controls{opacity:1}
+.control{border:1px solid #ffffff8a;background:#0e0910a6;color:#fffaf4;cursor:pointer;font:500 10px Jost,Arial,sans-serif;letter-spacing:.15em;text-transform:uppercase;padding:13px 18px;border-radius:999px;backdrop-filter:blur(8px);transition:background .25s,transform .25s}.control:hover,.control:focus-visible{background:#65263a;transform:translateY(-2px)}
+.control.primary{background:#fbf0d9;color:#321c26;border-color:#fbf0d9}.control.primary:hover{background:#fff}
+.note{font-size:11px;color:#ead9c8;margin-top:14px;min-height:17px;text-shadow:0 3px 9px #000}
+.back{position:absolute;top:25px;left:clamp(18px,4vw,55px);color:#fceacb;text-decoration:none;text-transform:uppercase;letter-spacing:.12em;font-size:11px;z-index:10;opacity:.9}
+.back:hover{text-decoration:underline}
+@media(max-width:480px){.layout{padding-top:95px;padding-bottom:36px}.clock{gap:5px}.countbox{margin-top:28px}.countlabel{font-size:9px}.num{font-size:clamp(38px,12vw,62px)}.name{letter-spacing:.07em;font-size:9px}.unit+.unit:before{left:-3px}.message{max-width:300px}.control{padding:12px 15px}.bg:before{background-position:center center}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition-duration:.01ms!important}.veil{display:none}}
+</style>
+</head>
+<body>
+<div class="bg" aria-hidden="true"></div><div class="veil" aria-hidden="true"></div><canvas id="confetti" aria-hidden="true"></canvas>
+<a class="back" href="index.html">← Voltar ao convite</a>
+<main class="layout">
+  <div class="topline">A nossa história tem uma data marcada</div>
+  <div class="ornament"></div>
+  <h1>Fernanda <span style="font-size:.6em;color:var(--gold)">&amp;</span> Hebert</h1>
+  <p class="subtitle">O nosso grande dia se aproxima</p>
+  <section class="countbox" aria-label="Contagem regressiva para o casamento">
+    <div class="countlabel">Faltam para o nosso sim</div>
+    <div class="clock">
+      <div class="unit"><span class="num" id="days">--</span><span class="name">Dias</span></div>
+      <div class="unit"><span class="num" id="hours">--</span><span class="name">Horas</span></div>
+      <div class="unit"><span class="num" id="minutes">--</span><span class="name">Minutos</span></div>
+      <div class="unit seconds" id="seconds-unit"><span class="num" id="seconds">--</span><span class="name">Segundos</span></div>
+    </div>
+  </section>
+  <p class="message" id="message">Sua presença torna esse momento ainda mais especial. Obrigado por fazer parte da nossa história!</p>
+  <p class="date">31 de janeiro de 2027 · Vila Velha, ES</p>
+  <div class="controls">
+    <button class="control primary" id="soundBtn" type="button" aria-pressed="false">♪ Ativar som do relógio</button>
+    <button class="control" id="replayBtn" type="button">✦ Reviver a celebração</button>
+  </div>
+  <div class="note" role="status" id="audioNote"></div>
+</main>
+<script>
+(()=>{'use strict';
+  // Meia-noite do dia do casamento, no horário de Brasília (UTC-03:00).
+  // Para começar a contagem até a cerimônia, modifique a hora abaixo.
+  const wedding = new Date('2027-01-31T00:00:00-03:00').getTime();
+  const $ = id => document.getElementById(id);
+  const unit=$('seconds-unit'), soundBtn=$('soundBtn'), audioNote=$('audioNote');
+  let previousSecond=null, audioCtx=null, audioOn=false, tickIndex=0;
+  function clockSound(){
+    if(!audioCtx||!audioOn||audioCtx.state!=='running')return;
+    // Tique-taque original sintetizado: dois cliques secos de alturas alternadas,
+    // com pequenos harmônicos e cauda de madeira/metal. Nenhum áudio protegido é copiado.
+    const t=audioCtx.currentTime+0.008;
+    const master=audioCtx.createGain();master.gain.value=.19;master.connect(audioCtx.destination);
+    [0,.026].forEach((delay,i)=>{
+      const osc=audioCtx.createOscillator();const g=audioCtx.createGain();
+      const base=(tickIndex%2?520:645);
+      osc.type=i?'triangle':'square';
+      osc.frequency.setValueAtTime(base*(i?1.31:1),t+delay);
+      osc.frequency.exponentialRampToValueAtTime((i?265:175),t+delay+.055);
+      g.gain.setValueAtTime(.0001,t+delay);
+      g.gain.exponentialRampToValueAtTime(i?.12:.33,t+delay+.003);
+      g.gain.exponentialRampToValueAtTime(.0001,t+delay+(i?.085:.12));
+      osc.connect(g);g.connect(master);osc.start(t+delay);osc.stop(t+delay+.14);
+    });
+    tickIndex++;
+  }
+  async function startSound(){
+    try{
+      const AudioContextType=window.AudioContext||window.webkitAudioContext;
+      if(!AudioContextType)throw Error('Áudio não suportado');
+      if(!audioCtx)audioCtx=new AudioContextType();
+      await audioCtx.resume();audioOn=audioCtx.state==='running';
+      if(!audioOn)throw Error('Navegador bloqueou áudio');
+      soundBtn.textContent='♫ Silenciar relógio';soundBtn.setAttribute('aria-pressed','true');
+      audioNote.textContent='Tique-taque ativado';clockSound();
+    }catch(e){audioOn=false;audioNote.textContent='Toque em “Ativar som do relógio” para ouvir o tique-taque.'}
+  }
+  soundBtn.addEventListener('click',async()=>{
+    if(audioOn){audioOn=false;soundBtn.textContent='♪ Ativar som do relógio';soundBtn.setAttribute('aria-pressed','false');audioNote.textContent='Som desligado';return}
+    await startSound();
+  });
+  function updateCountdown(){
+    const diff=Math.max(0,wedding-Date.now());
+    const sec=Math.floor(diff/1000);
+    const days=Math.floor(sec/86400),hours=Math.floor(sec%86400/3600),minutes=Math.floor(sec%3600/60),seconds=sec%60;
+    $('days').textContent=String(days).padStart(2,'0');
+    $('hours').textContent=String(hours).padStart(2,'0');
+    $('minutes').textContent=String(minutes).padStart(2,'0');
+    $('seconds').textContent=String(seconds).padStart(2,'0');
+    if(previousSecond!==null&&sec!==previousSecond&&diff>0){
+      unit.classList.remove('pulse');void unit.offsetWidth;unit.classList.add('pulse');clockSound();
+    }
+    previousSecond=sec;
+    if(diff===0){$('message').textContent='O grande dia chegou! Que a nossa história seja eterna. ♡';if(audioOn){audioOn=false;soundBtn.textContent='♪ Ativar som do relógio'}}
+  }
+  updateCountdown();setInterval(updateCountdown,180);
+  // Confetes locais em canvas; sem bibliotecas externas.
+  const canvas=$('confetti'),ctx=canvas.getContext('2d');let particles=[],frame=0,lastFrame=0;
+  const colors=['#f5d9a8','#fff8ee','#a84c70','#e9b3be','#c99c61','#fefefe'];
+  function resize(){const dpr=Math.min(2,window.devicePixelRatio||1);canvas.width=innerWidth*dpr;canvas.height=innerHeight*dpr;ctx.setTransform(dpr,0,0,dpr,0,0)}
+  window.addEventListener('resize',resize);resize();
+  function burst(){
+    const w=innerWidth,h=innerHeight,cx=w/2,cy=h*.42;
+    particles=[];
+    for(let i=0;i<230;i++){
+      let a=Math.random()*Math.PI*2,force=3+Math.random()*11;
+      particles.push({x:cx+(Math.random()-.5)*35,y:cy+(Math.random()-.5)*25,vx:Math.cos(a)*force,vy:Math.sin(a)*force-3,rot:Math.random()*7,vr:(Math.random()-.5)*.3,width:3+Math.random()*7,height:5+Math.random()*9,color:colors[i%colors.length],life:0,max:125+Math.random()*65});
+    }
+    if(!frame)frame=requestAnimationFrame(draw);
+  }
+  function draw(time){
+    const delta=Math.min(2,(time-lastFrame||16)/16.67);lastFrame=time;
+    ctx.clearRect(0,0,innerWidth,innerHeight);
+    particles=particles.filter(p=>p.life<p.max&&p.y<innerHeight+35);
+    for(const p of particles){p.life+=delta;p.vy+=.125*delta;p.vx*=Math.pow(.994,delta);p.x+=p.vx*delta;p.y+=p.vy*delta;p.rot+=p.vr*delta;
+      ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot);ctx.globalAlpha=Math.min(1,(p.max-p.life)/38);ctx.fillStyle=p.color;ctx.fillRect(-p.width/2,-p.height/2,p.width,p.height);ctx.restore()}
+    frame=particles.length?requestAnimationFrame(draw):0;
+    if(!frame)ctx.clearRect(0,0,innerWidth,innerHeight);
+  }
+  $('replayBtn').addEventListener('click',()=>burst());
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)updateCountdown()});
+  setTimeout(()=>{document.body.classList.add('started');if(!matchMedia('(prefers-reduced-motion: reduce)').matches)setTimeout(burst,750);},120);
+  // Navegação após clique em outro arquivo nem sempre herda permissão para áudio.
+  // Tentativa automática e botão explícito garantem alternativa quando o browser bloquear.
+  setTimeout(()=>{startSound()},500);
+})();
+</script>
+</body>
+</html>
