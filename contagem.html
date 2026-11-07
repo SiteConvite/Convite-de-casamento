@@ -76,23 +76,44 @@ h1{font:italic 500 clamp(51px,9.6vw,118px)/.9 'Cormorant Garamond',Georgia,serif
   const $ = id => document.getElementById(id);
   const unit=$('seconds-unit'), soundBtn=$('soundBtn'), audioNote=$('audioNote');
   let previousSecond=null, audioCtx=null, audioOn=false, tickIndex=0;
+  // Som original de relógio mecânico: percussão filtrada, sem ondas eletrônicas tonais.
+  // Dois golpes alternados (tic/tac), com estalo seco, corpo grave de madeira e eco sutil.
+  let tickBuffers=null;
+  function makeClockSample(ctx, isTock){
+    const duration=.23, sr=ctx.sampleRate, length=Math.ceil(duration*sr);
+    const buffer=ctx.createBuffer(1,length,sr), output=buffer.getChannelData(0);
+    // Ruído breve é usado como material de percussão (não como nota musical).
+    let low=0, mid=0;
+    const taps=isTock ? [{at:0,amp:.70},{at:.032,amp:.24}] : [{at:0,amp:.82},{at:.024,amp:.18}];
+    for(let i=0;i<length;i++){
+      const t=i/sr, n=Math.random()*2-1;
+      low += .045*(n-low);
+      mid += .23*(n-mid);
+      const wood=low*.65+(mid-low)*.65;
+      let hit=0;
+      for(const tap of taps){
+        const age=t-tap.at;
+        if(age>=0){
+          // Ataque muito rápido e decaimento natural de peça mecânica.
+          hit+=tap.amp*(Math.exp(-age*75)*.8+Math.exp(-age*29)*.2);
+        }
+      }
+      // Um leve corpo oco, percussivo e sem frequência tonal sustentada.
+      const hollow=Math.sin(2*Math.PI*(isTock?155:185)*t)*Math.exp(-t*45)*.13;
+      output[i]=Math.max(-1,Math.min(1,wood*hit*2.4+hollow));
+    }
+    return buffer;
+  }
   function clockSound(){
     if(!audioCtx||!audioOn||audioCtx.state!=='running')return;
-    // Tique-taque original sintetizado: dois cliques secos de alturas alternadas,
-    // com pequenos harmônicos e cauda de madeira/metal. Nenhum áudio protegido é copiado.
-    const t=audioCtx.currentTime+0.008;
-    const master=audioCtx.createGain();master.gain.value=.19;master.connect(audioCtx.destination);
-    [0,.026].forEach((delay,i)=>{
-      const osc=audioCtx.createOscillator();const g=audioCtx.createGain();
-      const base=(tickIndex%2?520:645);
-      osc.type=i?'triangle':'square';
-      osc.frequency.setValueAtTime(base*(i?1.31:1),t+delay);
-      osc.frequency.exponentialRampToValueAtTime((i?265:175),t+delay+.055);
-      g.gain.setValueAtTime(.0001,t+delay);
-      g.gain.exponentialRampToValueAtTime(i?.12:.33,t+delay+.003);
-      g.gain.exponentialRampToValueAtTime(.0001,t+delay+(i?.085:.12));
-      osc.connect(g);g.connect(master);osc.start(t+delay);osc.stop(t+delay+.14);
-    });
+    if(!tickBuffers)tickBuffers=[makeClockSample(audioCtx,false),makeClockSample(audioCtx,true)];
+    const src=audioCtx.createBufferSource();
+    src.buffer=tickBuffers[tickIndex%2];
+    const volume=audioCtx.createGain();volume.gain.value=.46;
+    // Retira o excesso de agudos, deixando o som mais quente e menos digital.
+    const filter=audioCtx.createBiquadFilter();filter.type='lowpass';filter.frequency.value=1850;filter.Q.value=.35;
+    src.connect(filter);filter.connect(volume);volume.connect(audioCtx.destination);
+    src.start(audioCtx.currentTime+.005);
     tickIndex++;
   }
   async function startSound(){
