@@ -11,16 +11,16 @@
 <meta property="og:title" content="Fernanda &amp; Hebert | Nosso Casamento">
 <meta property="og:description" content="Nosso grande dia está chegando! Com muito carinho, convidamos você para celebrar conosco em 31 de janeiro de 2027.">
 <meta property="og:url" content="https://siteconvite.github.io/Convite-de-casamento/">
-<meta property="og:image" content="https://siteconvite.github.io/Convite-de-casamento/capa-whatsapp.jpg">
-<meta property="og:image:secure_url" content="https://siteconvite.github.io/Convite-de-casamento/capa-whatsapp.jpg">
+<meta property="og:image" content="https://siteconvite.github.io/Convite-de-casamento/capa-whatsapp-v3.jpg">
+<meta property="og:image:secure_url" content="https://siteconvite.github.io/Convite-de-casamento/capa-whatsapp-v3.jpg">
 <meta property="og:image:type" content="image/jpeg">
 <meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Fernanda e Hebert abraçados ao ar livre">
+<meta property="og:image:height" content="1200">
+<meta property="og:image:alt" content="Fernanda e Hebert abraçados na fotografia do convite, 31 de janeiro de 2027">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Fernanda &amp; Hebert | Nosso Casamento">
 <meta name="twitter:description" content="Nosso grande dia está chegando! Celebre conosco em 31 de janeiro de 2027.">
-<meta name="twitter:image" content="https://siteconvite.github.io/Convite-de-casamento/capa-whatsapp.jpg">
+<meta name="twitter:image" content="https://siteconvite.github.io/Convite-de-casamento/capa-whatsapp-v3.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -80,10 +80,19 @@ footer{position:relative;z-index:2;text-align:center;padding:55px 20px;backgroun
 @keyframes cardEnter{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:780px){.rsvp-section{background-position:center}.rsvp-section:before{inset:9px}.rsvp-section .search-row{display:flex;flex-direction:column}.rsvp-section .search-row input{min-height:50px}.rsvp-section .confirm-buttons .btn{width:100%}.rsvp-section .card{margin-top:33px}.rsvp-section .section-title{font-size:clamp(40px,11vw,60px)}.quote{background-attachment:scroll}}
 @media(prefers-reduced-motion:reduce){.rsvp-section .card{animation:none}}
+
+/* A experiência com música começa com um toque real, inclusive em iOS e Android. */
+.music-status{max-width:440px;margin:16px auto 0;color:#fff1df;font-size:13px;line-height:1.55;text-shadow:0 2px 8px #000}
+.music-status[hidden]{display:none}
+.open-btn:disabled{opacity:.75;cursor:progress}
+.open-btn:focus-visible{outline:2px solid #f4dab7;outline-offset:4px}
 </style>
 </head>
 <body>
-<div class="intro" id="intro"><div class="intro-content"><div class="intro-line"></div><div class="intro-copy">Existem encontros que mudam o rumo de duas histórias.</div><div class="intro-names">Fernanda &amp; Hebert</div><button class="open-btn" id="open-invite">Abrir convite</button></div></div>
+<audio id="inviteMusic" preload="auto" loop>
+  <source src="musica-convite.mp3" type="audio/mpeg">
+</audio>
+<div class="intro" id="intro"><div class="intro-content"><div class="intro-line"></div><div class="intro-copy">Existem encontros que mudam o rumo de duas histórias.</div><div class="intro-names">Fernanda &amp; Hebert</div><button class="open-btn" id="open-invite" type="button">Abrir convite</button><p id="music-status" class="music-status" aria-live="polite" hidden></p></div></div>
 <nav class="nav" id="nav"><div class="monogram">F &amp; H</div><div class="nav-links"><a href="#historia">Nossa história</a><a href="#detalhes">O grande dia</a><a href="#galeria">Galeria</a><a href="#confirmar">Confirmar</a></div></nav>
 <header class="hero"><div class="hero-bg"></div><div class="hero-content"><div class="eyebrow">Nosso casamento</div><h1>Fernanda<br>&amp; Hebert</h1><div class="hero-date">31 de janeiro de 2027 · Vila Velha/ES</div></div><div class="scroll-cue">Descubra nossa história</div></header>
 <section class="section light" id="historia"><div class="story-grid"><div class="story-image reveal"></div><div class="reveal"><div class="section-kicker">Um novo capítulo</div><h2 class="section-title">Tudo nos trouxe até aqui.</h2><p class="lead">Depois de tantos momentos, histórias e sonhos compartilhados, chegou a hora de celebrarmos o início de um novo capítulo.</p><p>Queremos viver este dia ao lado das pessoas que fizeram parte da nossa caminhada. Este convite é também um pedido: venha celebrar, sorrir e guardar conosco uma lembrança para sempre.</p></div></div></section>
@@ -103,8 +112,50 @@ const SUPABASE_ANON_KEY="sb_publishable_WSPIsu75q3v19VJtp4CrUQ_TPpoJVzS";
 const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 const $=id=>document.getElementById(id);let currentGuest=null;
 const stepSearch=$('step-search'),stepConfirm=$('step-confirm'),stepThanks=$('step-thanks'),nameInput=$('name-input'),searchBtn=$('search-btn'),matchList=$('match-list'),notFoundMsg=$('not-found-msg'),surnameJoke=$('surname-joke'),guestNameDisplay=$('guest-name-display'),confirmQuestion=$('confirm-question'),alreadyAnswered=$('already-answered'),thanksTitle=$('thanks-title'),thanksMsg=$('thanks-msg');
-$('open-invite').onclick=()=>{sessionStorage.setItem('inviteOpened','1');$('intro').classList.add('closed');document.body.style.overflow=''};
-if(sessionStorage.getItem('inviteOpened'))$('intro').classList.add('closed');else document.body.style.overflow='hidden';
+// A música deve ser iniciada diretamente pelo gesto do usuário.
+// iOS e Android permitem play() em resposta a um toque, mas não garantem áudio
+// se o dispositivo estiver sem volume ou houver uma restrição do navegador.
+const inviteMusic = $('inviteMusic');
+const openInvite = $('open-invite');
+const musicStatus = $('music-status');
+const introScreen = $('intro');
+inviteMusic.volume = 0.85;
+document.body.style.overflow = 'hidden';
+
+function enterInvitation(){
+  introScreen.classList.add('closed');
+  document.body.style.overflow = '';
+}
+function audioStartFailed(err){
+  console.error('Falha ao iniciar música do convite:', err);
+  openInvite.disabled = false;
+  openInvite.textContent = 'Tentar abrir com música';
+  musicStatus.textContent = inviteMusic.error
+    ? 'Não foi possível carregar a música. Verifique se musica-convite.mp3 está na mesma pasta do index.html.'
+    : 'O navegador não liberou o áudio. Toque novamente para iniciar a música e abrir o convite.';
+  musicStatus.hidden = false;
+}
+openInvite.addEventListener('click', () => {
+  openInvite.disabled = true;
+  openInvite.textContent = 'Abrindo com música...';
+  musicStatus.hidden = true;
+  // IMPORTANTE: chamar play() imediatamente no clique, antes de qualquer await.
+  try {
+    const playback = inviteMusic.play();
+    if (playback && typeof playback.then === 'function') {
+      playback.then(enterInvitation).catch(audioStartFailed);
+    } else if (!inviteMusic.paused) {
+      enterInvitation();
+    } else {
+      audioStartFailed(new Error('Navegador não iniciou o áudio.'));
+    }
+  } catch (err) {
+    audioStartFailed(err);
+  }
+});
+// A abertura é exibida novamente após atualização da página: isso evita que
+// a visita abra diretamente sem música, já que autoplay puro é bloqueado.
+
 window.addEventListener('scroll',()=>$('nav').classList.toggle('scrolled',scrollY>60));
 const observer=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')}),{threshold:.16});document.querySelectorAll('.reveal').forEach(el=>observer.observe(el));
 function showStep(step){[stepSearch,stepConfirm,stepThanks].forEach(el=>el.classList.add('hidden'));step.classList.remove('hidden');}
