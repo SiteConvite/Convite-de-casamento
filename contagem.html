@@ -35,10 +35,23 @@ h1{font:italic 500 clamp(51px,9.6vw,118px)/.9 'Cormorant Garamond',Georgia,serif
 .date{font-size:11px;text-transform:uppercase;letter-spacing:.23em;margin:20px 0 0;color:#efd4ab;text-shadow:0 2px 12px #000;opacity:0;transition:opacity 1.3s 2.8s}body.started .date{opacity:1}
 .controls{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:center;margin-top:32px;opacity:0;transition:opacity 1.3s 3s}body.started .controls{opacity:1}
 .control{border:1px solid #ffffff8a;background:#0e0910a6;color:#fffaf4;cursor:pointer;font:500 10px Jost,Arial,sans-serif;letter-spacing:.15em;text-transform:uppercase;padding:13px 18px;border-radius:999px;backdrop-filter:blur(8px);transition:background .25s,transform .25s}.control:hover,.control:focus-visible{background:#65263a;transform:translateY(-2px)}
-.control.primary{background:#fbf0d9;color:#321c26;border-color:#fbf0d9}.control.primary:hover{background:#fff}
-.note{font-size:11px;color:#ead9c8;margin-top:14px;min-height:17px;text-shadow:0 3px 9px #000}
 .back{position:absolute;top:25px;left:clamp(18px,4vw,55px);color:#fceacb;text-decoration:none;text-transform:uppercase;letter-spacing:.12em;font-size:11px;z-index:10;opacity:.9}
 .back:hover{text-decoration:underline}
+/* Solicita um toque somente quando o navegador bloqueia a reprodução automática. */
+.audio-gate[hidden]{display:none!important}
+.audio-gate{position:fixed;inset:0;z-index:30;display:grid;place-items:center;
+  background:linear-gradient(165deg,#100b10f5,#26141fee);
+  text-align:center;padding:28px 20px;color:#fff9f1}
+.gate-content{max-width:430px}
+.gate-symbol{font:italic 64px 'Cormorant Garamond',Georgia,serif;color:#ead0a3}
+.gate-kicker{font:500 11px Jost,sans-serif;text-transform:uppercase;letter-spacing:.28em;color:#e4c9a7}
+.audio-gate h2{font:italic 500 clamp(38px,8vw,56px)/1.05 'Cormorant Garamond',Georgia,serif;margin:19px 0}
+.audio-gate p{line-height:1.75}
+.gate-start{cursor:pointer;border:1px solid #f7e3c7;background:#f7e3c7;color:#402235;
+  border-radius:999px;padding:16px 30px;font:500 12px Jost,sans-serif;
+  text-transform:uppercase;letter-spacing:.1em;margin-top:18px;min-height:52px}
+.gate-start:focus-visible{outline:2px solid #fff;outline-offset:4px}
+.gate-error{color:#f5d7cd;font-size:12px;min-height:22px}
 @media(max-width:480px){.layout{padding-top:95px;padding-bottom:36px}.clock{gap:5px}.countbox{margin-top:28px}.countlabel{font-size:9px}.num{font-size:clamp(38px,12vw,62px)}.name{letter-spacing:.07em;font-size:9px}.unit+.unit:before{left:-3px}.message{max-width:300px}.control{padding:12px 15px}.bg:before{background-position:center center}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition-duration:.01ms!important}.veil{display:none}}
 </style>
@@ -46,6 +59,17 @@ h1{font:italic 500 clamp(51px,9.6vw,118px)/.9 'Cormorant Garamond',Georgia,serif
 <body>
 <div class="bg" aria-hidden="true"></div><div class="veil" aria-hidden="true"></div><canvas id="confetti" aria-hidden="true"></canvas>
 <a class="back" href="index.html">← Voltar ao convite</a>
+<audio id="clockAudio" src="relogio-cinematico.mp3" preload="auto" loop></audio>
+<div class="audio-gate" id="audioGate" hidden>
+  <div class="gate-content">
+    <span class="gate-symbol" aria-hidden="true">♡</span>
+    <p class="gate-kicker">Fernanda &amp; Hebert</p>
+    <h2>O nosso grande dia se aproxima</h2>
+    <p>Toque para abrir a contagem regressiva com o som do nosso relógio.</p>
+    <button type="button" id="startExperience" class="gate-start">▶ Iniciar contagem</button>
+    <p class="gate-error" id="audioError" role="status"></p>
+  </div>
+</div>
 <main class="layout">
   <div class="topline">A nossa história tem uma data marcada</div>
   <div class="ornament"></div>
@@ -63,10 +87,8 @@ h1{font:italic 500 clamp(51px,9.6vw,118px)/.9 'Cormorant Garamond',Georgia,serif
   <p class="message" id="message">Sua presença torna esse momento ainda mais especial. Obrigado por fazer parte da nossa história!</p>
   <p class="date">31 de janeiro de 2027 · Vila Velha, ES</p>
   <div class="controls">
-    <button class="control primary" id="soundBtn" type="button" aria-pressed="false">♪ Ativar som do relógio</button>
     <button class="control" id="replayBtn" type="button">✦ Reviver a celebração</button>
   </div>
-  <div class="note" role="status" id="audioNote"></div>
 </main>
 <script>
 (()=>{'use strict';
@@ -74,62 +96,48 @@ h1{font:italic 500 clamp(51px,9.6vw,118px)/.9 'Cormorant Garamond',Georgia,serif
   // Para começar a contagem até a cerimônia, modifique a hora abaixo.
   const wedding = new Date('2027-01-31T00:00:00-03:00').getTime();
   const $ = id => document.getElementById(id);
-  const unit=$('seconds-unit'), soundBtn=$('soundBtn'), audioNote=$('audioNote');
-  let previousSecond=null, audioCtx=null, audioOn=false, tickIndex=0;
-  // Som original de relógio mecânico: percussão filtrada, sem ondas eletrônicas tonais.
-  // Dois golpes alternados (tic/tac), com estalo seco, corpo grave de madeira e eco sutil.
-  let tickBuffers=null;
-  function makeClockSample(ctx, isTock){
-    const duration=.23, sr=ctx.sampleRate, length=Math.ceil(duration*sr);
-    const buffer=ctx.createBuffer(1,length,sr), output=buffer.getChannelData(0);
-    // Ruído breve é usado como material de percussão (não como nota musical).
-    let low=0, mid=0;
-    const taps=isTock ? [{at:0,amp:.70},{at:.032,amp:.24}] : [{at:0,amp:.82},{at:.024,amp:.18}];
-    for(let i=0;i<length;i++){
-      const t=i/sr, n=Math.random()*2-1;
-      low += .045*(n-low);
-      mid += .23*(n-mid);
-      const wood=low*.65+(mid-low)*.65;
-      let hit=0;
-      for(const tap of taps){
-        const age=t-tap.at;
-        if(age>=0){
-          // Ataque muito rápido e decaimento natural de peça mecânica.
-          hit+=tap.amp*(Math.exp(-age*75)*.8+Math.exp(-age*29)*.2);
-        }
+  const unit = $('seconds-unit');
+  const clockAudio = $('clockAudio');
+  const audioGate = $('audioGate');
+  const startExperienceBtn = $('startExperience');
+  const audioError = $('audioError');
+  let previousSecond = null;
+  let started = false;
+  // Som original enviado pelo usuário, com 8 tic-tacs reais a cada 8 segundos.
+  // Não há botão para silenciar: o áudio fica em loop enquanto a contagem estiver ativa.
+  clockAudio.volume = 0.78;
+  clockAudio.loop = true;
+
+  function revealScene() {
+    if (started) return;
+    started = true;
+    audioGate.hidden = true;
+    setTimeout(() => {
+      document.body.classList.add('started');
+      if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        setTimeout(burst, 750);
       }
-      // Um leve corpo oco, percussivo e sem frequência tonal sustentada.
-      const hollow=Math.sin(2*Math.PI*(isTock?155:185)*t)*Math.exp(-t*45)*.13;
-      output[i]=Math.max(-1,Math.min(1,wood*hit*2.4+hollow));
+    }, 120);
+  }
+
+  async function tryStartAudio(fromUserTouch = false) {
+    try {
+      await clockAudio.play();
+      revealScene();
+    } catch (err) {
+      // Muitos navegadores bloqueiam áudio ao abrir uma nova página.
+      // Nesse caso, o convidado toca uma única vez para iniciar COM som.
+      audioGate.hidden = false;
+      if (fromUserTouch) {
+        audioError.textContent = 'Não foi possível reproduzir o relógio. Confira se o arquivo relogio-cinematico.mp3 foi enviado ao GitHub e toque novamente.';
+      }
     }
-    return buffer;
   }
-  function clockSound(){
-    if(!audioCtx||!audioOn||audioCtx.state!=='running')return;
-    if(!tickBuffers)tickBuffers=[makeClockSample(audioCtx,false),makeClockSample(audioCtx,true)];
-    const src=audioCtx.createBufferSource();
-    src.buffer=tickBuffers[tickIndex%2];
-    const volume=audioCtx.createGain();volume.gain.value=.46;
-    // Retira o excesso de agudos, deixando o som mais quente e menos digital.
-    const filter=audioCtx.createBiquadFilter();filter.type='lowpass';filter.frequency.value=1850;filter.Q.value=.35;
-    src.connect(filter);filter.connect(volume);volume.connect(audioCtx.destination);
-    src.start(audioCtx.currentTime+.005);
-    tickIndex++;
-  }
-  async function startSound(){
-    try{
-      const AudioContextType=window.AudioContext||window.webkitAudioContext;
-      if(!AudioContextType)throw Error('Áudio não suportado');
-      if(!audioCtx)audioCtx=new AudioContextType();
-      await audioCtx.resume();audioOn=audioCtx.state==='running';
-      if(!audioOn)throw Error('Navegador bloqueou áudio');
-      soundBtn.textContent='♫ Silenciar relógio';soundBtn.setAttribute('aria-pressed','true');
-      audioNote.textContent='Tique-taque ativado';clockSound();
-    }catch(e){audioOn=false;audioNote.textContent='Toque em “Ativar som do relógio” para ouvir o tique-taque.'}
-  }
-  soundBtn.addEventListener('click',async()=>{
-    if(audioOn){audioOn=false;soundBtn.textContent='♪ Ativar som do relógio';soundBtn.setAttribute('aria-pressed','false');audioNote.textContent='Som desligado';return}
-    await startSound();
+
+  startExperienceBtn.addEventListener('click', () => tryStartAudio(true));
+  clockAudio.addEventListener('error', () => {
+    audioGate.hidden = false;
+    audioError.textContent = 'Áudio não encontrado. Envie relogio-cinematico.mp3 junto de contagem.html no GitHub.';
   });
   function updateCountdown(){
     const diff=Math.max(0,wedding-Date.now());
@@ -140,10 +148,10 @@ h1{font:italic 500 clamp(51px,9.6vw,118px)/.9 'Cormorant Garamond',Georgia,serif
     $('minutes').textContent=String(minutes).padStart(2,'0');
     $('seconds').textContent=String(seconds).padStart(2,'0');
     if(previousSecond!==null&&sec!==previousSecond&&diff>0){
-      unit.classList.remove('pulse');void unit.offsetWidth;unit.classList.add('pulse');clockSound();
+      unit.classList.remove('pulse');void unit.offsetWidth;unit.classList.add('pulse');
     }
     previousSecond=sec;
-    if(diff===0){$('message').textContent='O grande dia chegou! Que a nossa história seja eterna. ♡';if(audioOn){audioOn=false;soundBtn.textContent='♪ Ativar som do relógio'}}
+    if(diff===0){$('message').textContent='O grande dia chegou! Que a nossa história seja eterna. ♡';clockAudio.pause();}
   }
   updateCountdown();setInterval(updateCountdown,180);
   // Confetes locais em canvas; sem bibliotecas externas.
@@ -170,11 +178,17 @@ h1{font:italic 500 clamp(51px,9.6vw,118px)/.9 'Cormorant Garamond',Georgia,serif
     if(!frame)ctx.clearRect(0,0,innerWidth,innerHeight);
   }
   $('replayBtn').addEventListener('click',()=>burst());
-  document.addEventListener('visibilitychange',()=>{if(!document.hidden)updateCountdown()});
-  setTimeout(()=>{document.body.classList.add('started');if(!matchMedia('(prefers-reduced-motion: reduce)').matches)setTimeout(burst,750);},120);
-  // Navegação após clique em outro arquivo nem sempre herda permissão para áudio.
-  // Tentativa automática e botão explícito garantem alternativa quando o browser bloquear.
-  setTimeout(()=>{startSound()},500);
+  document.addEventListener('visibilitychange',()=>{
+    if(!document.hidden){
+      updateCountdown();
+      if(started && clockAudio.paused && Date.now() < wedding) {
+        clockAudio.play().catch(()=>{audioGate.hidden=false;});
+      }
+    }
+  });
+  // Tentativa automática após o redirecionamento a partir do convite.
+  // Se o navegador bloquear o autoplay, aparecerá uma tela para iniciar a experiência COM áudio.
+  tryStartAudio();
 })();
 </script>
 </body>
